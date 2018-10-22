@@ -77,6 +77,23 @@ class Excel(object):
         
         return less_than_requirement, greater_than_requirement
 
+    def optional_course(self):
+        # 您的通识拓展选修课共通过了 {} 门, 分别为:
+        # 课程代码: {}, 课程名称: {}, 课程归属: {}, 学分: {}
+        report = "\n\n您的通识拓展选修课共通过了 {} 门, 总学分为: {}, 共有 {} 个类别, 分别为:\n".format(
+            self.data.loc[(self.data['课程性质'] == '通识拓展选修课') & (self.data['成绩'] >= 60), '课程代码'].count(),
+            self.data.loc[(self.data['课程性质'] == '通识拓展选修课') & (self.data['成绩'] >= 60), '学分'].sum(),
+            len(set(self.data.loc[(self.data['课程性质'] == '通识拓展选修课') & (self.data['成绩'] >= 60), '课程归属'])))
+        optional_courses = self.data.loc[(self.data['课程性质'] == '通识拓展选修课') & (self.data['成绩'] >= 60)]
+        for ind in optional_courses.index:
+            report += "\n\t课程代码: {}, 课程名称: {}, 课程归属: {}, 学分: {}".format(
+                optional_courses.loc[ind, '课程代码'],
+                optional_courses.loc[ind, '课程名称'],
+                optional_courses.loc[ind, '课程归属'],
+                optional_courses.loc[ind, '学分']
+            )
+        return report
+
     def __str__(self):
         return self.data.values
 
@@ -104,16 +121,19 @@ def main(args):
             raise FileExistsError("成绩单格式错误, 请检查成绩单后缀名是否为`.xlsx`或`.xls`")
         
         excel = Excel(os.path.join('./programs/', args.program), args.scorefile)
-        report_string = """\t{} 专业的同学您好, 您正在使用的培养方案版本为 {}, 适用于 {} 使用. 
-    
-        若有统计错误之处, 烦请将本人成绩单(excel文件)和错误信息发送至邮箱: spico1026@gmail.com
-        若培养方案列表中暂不支持您的培养方案, 也请您将相关培养方案发送至邮箱, 我将为您更新.
+        report_string = """
+    {} 专业的同学您好, 您正在使用的培养方案版本为 {}, 适用于 {} 使用. 
 
-        重要说明: 最终统计结果仅供参考, 请以教学科出具的相关文件为准!!!
+    若有统计错误之处, 烦请将本人成绩单(excel文件)和错误信息发送至邮箱: spico1026@gmail.com
+    若培养方案列表中暂不支持您的培养方案, 也请您将相关培养方案发送至邮箱, 我将为您更新.
 
-        您的加权平均分为 {}, 您的平均学分绩点为 {}.
-        您共修了 {} 门课, 其中挂科门数为 {} 门, 补考仍未通过的门数为 {} 门, 重修门数为 {} 门.
-        您共修了 {} 个学分, 其中通过的学分为 {}, 毕业要求学分为 {} .
+    重要说明: 最终统计结果仅供参考, 请以教学科出具的相关文件为准!!!
+
+基本概要:
+
+    您的加权平均分为 {}, 您的平均学分绩点为 {}.
+    您共修了 {} 门课, 其中挂科门数为 {} 门, 补考仍未通过的门数为 {} 门, 重修门数为 {} 门.
+    您共修了 {} 个学分, 其中通过的学分为 {}, 毕业要求学分为 {} .
         """
         # 培养方案中 {} 模块应修 {} 学分, 目前还差 {} 个学分.
         # 培养方案中 {} 模块应修 {} 学分, 超修了 {} 个学分.
@@ -129,13 +149,15 @@ def main(args):
             credit_sum, pass_credit, graduation_credit
         )
 
+        report += "\n未修满学分模块:\n"
+
         if not less_than_requirement: 
             report += "您没有未修满学分的模块"
         else:
             for item in less_than_requirement:
                 report += "\n\t培养方案中 {} 模块应修 {} 学分, 目前还差 {} 个学分.".format(item[0], item[1], item[2])
 
-        report += '\n'
+        report += "\n\n超修学分模块:\n"
 
         if not greater_than_requirement:
             report += "您没有超修的模块"
@@ -143,11 +165,14 @@ def main(args):
             for item in greater_than_requirement:
                 report += "\n\t培养方案中 {} 模块应修 {} 学分, 超修了 {} 个学分.".format(item[0], item[1], item[2])
 
+        report += excel.optional_course()
+
         print(report)
         print("\n报告已保存在 report.txt 文件中. 最终统计结果仅供参考, 请以教学科发放的具体文件为准!!!")
         
         with open('report.txt', 'w', encoding="utf-8") as file:
             file.writelines(report) 
+
 
 
 if __name__ == '__main__':
