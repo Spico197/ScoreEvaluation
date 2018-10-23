@@ -42,6 +42,13 @@ class Excel(object):
         gpa = self.data['绩点'].values
         score = self.data['成绩'].values
         
+        if self.data['学分'].isnull().any():
+            raise ValueError("学分中有空值, 请检查成绩单格式")
+        if self.data['绩点'].isnull().any():
+            raise ValueError("绩点中有空值, 请检查成绩单格式")
+        if self.data['成绩'].isnull().any():
+            raise ValueError("成绩中有空值, 请检查成绩单格式")
+        
         weighted_gpa = np.dot(credit, gpa)/np.sum(credit)
         weighted_score = np.dot(credit, score)/np.sum(credit)
         
@@ -169,11 +176,11 @@ def main(args):
 
         report += excel.optional_course()
 
-        print(report)
-        print("\n报告已保存在 report.txt 文件中. 最终统计结果仅供参考, 请以教学科发放的具体文件为准!!!")
+        # print(report)
+        # print("\n报告已保存在 report.txt 文件中. 最终统计结果仅供参考, 请以教学科发放的具体文件为准!!!")
         
-        with open('report.txt', 'w', encoding="utf-8") as file:
-            file.writelines(report) 
+        # with open('report.txt', 'w', encoding="utf-8") as file:
+        #     file.writelines(report) 
 
 
 
