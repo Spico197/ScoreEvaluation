@@ -28,9 +28,11 @@ class Excel(object):
     def normalize(self):
         """将成绩中的等级转换为分数"""
         self.data.loc[self.data['成绩'] == '优秀', '成绩'] = 90
+        self.data.loc[self.data['成绩'] == '优', '成绩'] = 90
         self.data.loc[self.data['成绩'] == '良好', '成绩'] = 80
         self.data.loc[self.data['成绩'] == '良', '成绩'] = 80        
         self.data.loc[self.data['成绩'] == '中等', '成绩'] = 70
+        self.data.loc[self.data['成绩'] == '中', '成绩'] = 70        
         self.data.loc[self.data['成绩'] == '及格', '成绩'] = 60
         self.data.loc[self.data['成绩'] == '不及格', '成绩'] = 50
 
@@ -39,7 +41,7 @@ class Excel(object):
         credit = self.data['学分'].values
         gpa = self.data['绩点'].values
         score = self.data['成绩'].values
-
+        
         weighted_gpa = np.dot(credit, gpa)/np.sum(credit)
         weighted_score = np.dot(credit, score)/np.sum(credit)
         
