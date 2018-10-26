@@ -27,20 +27,29 @@ class Excel(object):
     
     def normalize(self):
         """将成绩中的等级转换为分数"""
-        self.data.loc[self.data['成绩'] == '优秀', '成绩'] = 90
-        self.data.loc[self.data['成绩'] == '优', '成绩'] = 90
-        self.data.loc[self.data['成绩'] == '良好', '成绩'] = 80
-        self.data.loc[self.data['成绩'] == '良', '成绩'] = 80        
-        self.data.loc[self.data['成绩'] == '中等', '成绩'] = 70
-        self.data.loc[self.data['成绩'] == '中', '成绩'] = 70        
-        self.data.loc[self.data['成绩'] == '及格', '成绩'] = 60
-        self.data.loc[self.data['成绩'] == '不及格', '成绩'] = 50
+        self.data.replace({"成绩": "优秀"}, 90, inplace=True)
+        self.data.replace({"成绩": "优"}, 90, inplace=True)
+        self.data.replace({"成绩": "良好"}, 80, inplace=True)
+        self.data.replace({"成绩": "良"}, 80, inplace=True)
+        self.data.replace({"成绩": "中等"}, 70, inplace=True)
+        self.data.replace({"成绩": "中"}, 70, inplace=True)
+        self.data.replace({"成绩": "及格"}, 60, inplace=True)
+        self.data.replace({"成绩": "不及格"}, 50, inplace=True)
+        
+        # self.data.loc[self.data['成绩'].str == '优秀', '成绩'] = 90
+        # self.data.loc[self.data['成绩'].str == '优', '成绩'] = 90
+        # self.data.loc[self.data['成绩'].str == '良好', '成绩'] = 80
+        # self.data.loc[self.data['成绩'].str == '良', '成绩'] = 80        
+        # self.data.loc[self.data['成绩'].str == '中等', '成绩'] = 70
+        # self.data.loc[self.data['成绩'].str == '中', '成绩'] = 70        
+        # self.data.loc[self.data['成绩'].str == '及格', '成绩'] = 60
+        # self.data.loc[self.data['成绩'].str == '不及格', '成绩'] = 50
 
     def weighted_score(self):
         """获取平均学分绩点和加权平均成绩"""
-        credit = self.data['学分'].values
-        gpa = self.data['绩点'].values
-        score = self.data['成绩'].values
+        credit = self.data['学分'].values.astype(float)
+        gpa = self.data['绩点'].values.astype(float)
+        score = self.data['成绩'].values.astype(float)
         
         if self.data['学分'].isnull().any():
             raise ValueError("学分中有空值, 请检查成绩单格式")
@@ -129,6 +138,8 @@ def main(args):
         if args.scorefile[-5:] != '.xlsx' and args.scorefile[-4:] != '.xls':
             raise FileExistsError("成绩单格式错误, 请检查成绩单后缀名是否为`.xlsx`或`.xls`")
         
+        print("-"*20 + "正在进行数据导入" + "-"*20)
+
         excel = Excel(os.path.join('./programs/', args.program), args.scorefile)
         report_string = """
     {} 专业的同学您好, 您正在使用的培养方案版本为 {}, 适用于 {} 使用. 
@@ -146,9 +157,11 @@ def main(args):
         """
         # 培养方案中 {} 模块应修 {} 学分, 目前还差 {} 个学分.
         # 培养方案中 {} 模块应修 {} 学分, 超修了 {} 个学分.
-
+        print("-"*20 + "正在计算您的成绩" + "-"*20)
         weighted_score, weighted_gpa = excel.weighted_score()
+        print("-"*20 + "正在统计您的课程" + "-"*20)        
         total_number, makeup_number, makeup_non_pass_number, retake_number = excel.course_count()
+        print("-"*20 + "正在统计您的学分" + "-"*20)        
         credit_sum, pass_credit, graduation_credit = excel.credit_stat()
         less_than_requirement, greater_than_requirement = excel.module_course_stat()
 
@@ -176,15 +189,18 @@ def main(args):
 
         report += excel.optional_course()
 
-        # print(report)
-        # print("\n报告已保存在 report.txt 文件中. 最终统计结果仅供参考, 请以教学科发放的具体文件为准!!!")
+        print(report)
         
-        # with open('report.txt', 'w', encoding="utf-8") as file:
-        #     file.writelines(report) 
-
+        with open('report.txt', 'w', encoding="utf-8") as file:
+            file.writelines(report) 
+        
+        print("-"*20 + "正在保存您的报告" + "-"*20)                
+        print("\n报告已保存在 report.txt 文件中. 最终统计结果仅供参考, 请以教学科发放的具体文件为准!!!")
 
 
 if __name__ == '__main__':
+    print("-"*20 + "正在进行参数解析" + "-"*20)
+    
     parser = argparse.ArgumentParser()
     parser.add_argument("program", help="培养方案的选择, 或输入`ls`查看目前支持的培养方案")
     parser.add_argument("scorefile", nargs='?', help="Excel版成绩单(*.xls|*.xlsx)")
