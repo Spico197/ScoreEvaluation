@@ -46,10 +46,12 @@
 |tongxingongcheng2013.json|通信工程|2013版|2013-2015级|
 |gongchengguanli2013.json|工程管理|2013版|2013-2015级|
 |cs16.json|计算机科学与技术|2016版|2016级计科专业本科生|
+|jinrong2016.json|金融学|2016版|2016级金融学及以后|
 
 ### Update
 
 - 2018/10/23 加入工程管理2013版和计科16版培养方案
+- 2018/10/26 加入金融学2016版培养方案
 
 ## 使用方法
 
@@ -75,6 +77,7 @@ python score.py tongxingongcheng2013.json score.xlsx
 - 鸣谢
     - Yaphet (计科16版) `yaphetliu@foxmail.com`
     - 柚子 (工程管理13版) `2732830541@qq.com`
+    - Eyuan (金融学16版) `549155139@qq.com`
 
 ## 勘误
 
